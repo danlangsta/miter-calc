@@ -12,6 +12,27 @@
         #three-container canvas { outline: none; cursor: grab; }
         #three-container canvas:active { cursor: grabbing; }
         ::selection { background-color: #CCDA46; color: #121417; }
+
+        /* Printer-Friendly Cut Sheet Styles */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            header, main, .no-print {
+                display: none !important;
+            }
+            #print-sheet {
+                display: block !important;
+                width: 100% !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0.25in !important;
+                font-family: 'Inter', sans-serif !important;
+            }
+        }
     </style>
     <!-- Three.js ES Modules via CDN -->
     <script type="importmap">
@@ -41,28 +62,31 @@
                 </div>
             </div>
             
-            <!-- Sliding Segmented Control: Main Tool Switcher -->
-            <div id="tab-container" class="relative flex bg-[#1A1D21] p-1.5 rounded-xl border border-[#24282F] text-xs sm:text-sm font-bold w-full sm:w-auto">
+            <!-- Sliding Segmented Control: 3-Way Tool Switcher -->
+            <div id="tab-container" class="relative flex bg-[#1A1D21] p-1.5 rounded-xl border border-[#24282F] text-xs sm:text-sm font-bold w-full sm:w-auto overflow-x-auto">
                 <!-- Gliding Pill Indicator -->
                 <div id="tab-slider" class="absolute top-1.5 bottom-1.5 bg-[#CCDA46] rounded-lg shadow-sm transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] pointer-events-none"></div>
 
-                <button onclick="switchTool('miter')" id="tab-miter" class="relative z-10 px-5 py-2.5 rounded-lg text-[#121417] font-black uppercase tracking-wide transition-colors duration-200 cursor-pointer flex-1 sm:flex-initial text-center">
+                <button onclick="switchTool('miter')" id="tab-miter" class="relative z-10 px-4 sm:px-5 py-2.5 rounded-lg text-[#121417] font-black uppercase tracking-wide transition-colors duration-200 cursor-pointer flex-1 sm:flex-initial text-center whitespace-nowrap">
                     Miter Angles
                 </button>
-                <button onclick="switchTool('crown')" id="tab-crown" class="relative z-10 px-5 py-2.5 rounded-lg text-[#8C95A3] hover:text-white font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer flex-1 sm:flex-initial text-center">
+                <button onclick="switchTool('crown')" id="tab-crown" class="relative z-10 px-4 sm:px-5 py-2.5 rounded-lg text-[#8C95A3] hover:text-white font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer flex-1 sm:flex-initial text-center whitespace-nowrap">
                     Crown Molding
+                </button>
+                <button onclick="switchTool('wainscot')" id="tab-wainscot" class="relative z-10 px-4 sm:px-5 py-2.5 rounded-lg text-[#8C95A3] hover:text-white font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer flex-1 sm:flex-initial text-center whitespace-nowrap">
+                    Wainscoting
                 </button>
             </div>
         </div>
     </header>
 
     <!-- Main Content Container -->
-    <main class="max-w-6xl mx-auto px-4 py-8 w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <main class="max-w-6xl mx-auto px-4 py-8 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        <!-- Left Column: Controls & Inputs -->
-        <div class="lg:col-span-6 space-y-6">
+        <!-- Left Column: Primary Controls & Inputs -->
+        <div class="lg:col-span-5 space-y-6">
             
-            <!-- TOOL 1: MITER CALCULATOR -->
+            <!-- TOOL 1 PRIMARY INPUTS: MITER CALCULATOR -->
             <div id="tool-miter" class="bg-[#181B1F] border border-[#24282F] p-6 rounded-2xl shadow-xl space-y-5">
                 <div class="flex items-center justify-between border-b border-[#24282F] pb-3.5">
                     <h2 class="text-base font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
@@ -77,67 +101,15 @@
                     <label for="jointAngle" class="block text-xs font-bold text-[#A6B0BE] uppercase tracking-wider mb-1.5">Corner / Joint Angle (θ)</label>
                     <div class="relative">
                         <input type="number" id="jointAngle" value="90" min="1" max="180" step="0.1" 
-                            class="w-full bg-[#101215] border border-[#2B3038] rounded-xl px-4 py-3 text-white text-lg focus:outline-none focus:border-[#CCDA46] focus:ring-1 focus:ring-[#CCDA46] font-extrabold transition"
+                            class="w-full bg-[#101215] border border-[#2B3038] rounded-xl px-4 py-3.5 text-white text-xl focus:outline-none focus:border-[#CCDA46] focus:ring-1 focus:ring-[#CCDA46] font-extrabold transition"
                             oninput="calculateMiter()">
-                        <span class="absolute right-4 top-3 text-[#5A6370] font-black text-lg">°</span>
+                        <span class="absolute right-4 top-3.5 text-[#5A6370] font-black text-xl">°</span>
                     </div>
-                </div>
-
-                <!-- Primary Inputs: Board Widths (Default 1") -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="widthA" class="block text-xs font-bold text-[#A6B0BE] uppercase tracking-wider mb-1.5">Board A Width</label>
-                        <input type="number" id="widthA" value="1" min="0.0625" step="0.0625" 
-                            class="w-full bg-[#101215] border border-[#2B3038] rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#CCDA46] focus:ring-1 focus:ring-[#CCDA46] font-bold transition"
-                            oninput="calculateMiter()">
-                    </div>
-                    <div>
-                        <label for="widthB" class="block text-xs font-bold text-[#A6B0BE] uppercase tracking-wider mb-1.5">Board B Width</label>
-                        <input type="number" id="widthB" value="1" min="0.0625" step="0.0625" 
-                            class="w-full bg-[#101215] border border-[#2B3038] rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#CCDA46] focus:ring-1 focus:ring-[#CCDA46] font-bold transition"
-                            oninput="calculateMiter()">
-                    </div>
-                </div>
-
-                <!-- Primary Input: Measurement Unit -->
-                <div>
-                    <label class="block text-xs font-bold text-[#A6B0BE] uppercase tracking-wider mb-1.5">Measurement Unit</label>
-                    <div class="grid grid-cols-3 gap-2 bg-[#101215] p-1.5 rounded-xl border border-[#2B3038]">
-                        <button type="button" onclick="setUnit('mm')" id="unit-mm" class="touch-target py-2 text-xs font-bold rounded-lg text-[#8C95A3] hover:text-white transition cursor-pointer">mm</button>
-                        <button type="button" onclick="setUnit('cm')" id="unit-cm" class="touch-target py-2 text-xs font-bold rounded-lg text-[#8C95A3] hover:text-white transition cursor-pointer">cm</button>
-                        <button type="button" onclick="setUnit('in')" id="unit-in" class="touch-target py-2 text-xs font-black rounded-lg bg-[#CCDA46] text-[#121417] transition cursor-pointer shadow-sm">inches</button>
-                    </div>
-                </div>
-
-                <!-- Demoted Hierarchy: Quick Presets & Integrated Fine-Tune Offset -->
-                <div class="pt-4 border-t border-[#24282F] space-y-4">
-                    <div>
-                        <label class="block text-[11px] font-bold text-[#5A6370] uppercase tracking-wider mb-2">Quick Corner Presets</label>
-                        <div class="grid grid-cols-4 gap-2">
-                            <button onclick="setJointAngle(90)" class="touch-target bg-[#14171A] border border-[#24282F] hover:border-[#CCDA46] text-xs py-2 rounded-lg text-[#A6B0BE] hover:text-white font-bold transition cursor-pointer">90° Square</button>
-                            <button onclick="setJointAngle(120)" class="touch-target bg-[#14171A] border border-[#24282F] hover:border-[#CCDA46] text-xs py-2 rounded-lg text-[#A6B0BE] hover:text-white font-bold transition cursor-pointer">120° Hex</button>
-                            <button onclick="setJointAngle(135)" class="touch-target bg-[#14171A] border border-[#24282F] hover:border-[#CCDA46] text-xs py-2 rounded-lg text-[#A6B0BE] hover:text-white font-bold transition cursor-pointer">135° Oct</button>
-                            <button onclick="setJointAngle(60)" class="touch-target bg-[#14171A] border border-[#24282F] hover:border-[#CCDA46] text-xs py-2 rounded-lg text-[#A6B0BE] hover:text-white font-bold transition cursor-pointer">60° Acute</button>
-                        </div>
-                    </div>
-
-                    <!-- Integrated Saw Calibration -->
-                    <div class="bg-[#121417] border border-[#24282F] p-3.5 rounded-xl space-y-1.5">
-                        <label for="sawCorrectionMiter" class="block text-xs font-bold text-[#A6B0BE] flex items-center justify-between uppercase tracking-wider">
-                            <span>Saw Scale Fine-Tune Offset</span>
-                            <span class="text-[10px] text-[#5A6370] font-normal normal-case">Defaults to -0.5°</span>
-                        </label>
-                        <div class="relative">
-                            <input type="number" id="sawCorrectionMiter" value="-0.5" min="-5" max="5" step="0.1" 
-                                class="w-full bg-[#0E1012] border border-[#2B3038] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#CCDA46] text-sm font-bold transition"
-                                oninput="syncCalibration(this.value)">
-                            <span class="absolute right-3.5 top-2 text-[#5A6370] font-bold text-sm">°</span>
-                        </div>
-                    </div>
+                    <p class="text-[11px] text-[#5A6370] mt-2">Enter the measured corner angle above. Board widths, units, presets, and saw scale calibration are located below the visualizer.</p>
                 </div>
             </div>
 
-            <!-- TOOL 2: CROWN MOLDING CALCULATOR -->
+            <!-- TOOL 2 PRIMARY INPUTS: CROWN MOLDING CALCULATOR -->
             <div id="tool-crown" class="bg-[#181B1F] border border-[#24282F] p-6 rounded-2xl shadow-xl space-y-5 hidden">
                 <div class="flex items-center justify-between border-b border-[#24282F] pb-3.5">
                     <h2 class="text-base font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
@@ -180,14 +152,16 @@
                 <div class="bg-[#121417] border border-[#24282F] p-4 rounded-xl space-y-3">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-black uppercase tracking-wider text-[#CCDA46]">Wall-to-Board Length Helper</span>
-                        <span class="text-[10px] font-bold text-[#8C95A3] uppercase">Nearest 1/16"</span>
+                        <span class="text-[10px] font-bold text-[#8C95A3] uppercase">1/16" Precision</span>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label for="wallLengthInches" class="block text-[11px] font-bold text-[#A6B0BE] uppercase tracking-wider mb-1">Measured Wall Length (in)</label>
-                            <input type="number" id="wallLengthInches" value="120" min="1" step="0.0625" 
+                            <input type="text" id="wallLengthInches" value='120"' data-inch="true"
                                 class="w-full bg-[#0E1012] border border-[#2B3038] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#CCDA46] font-bold transition"
-                                oninput="calculateCrown()">
+                                oninput="calculateCrown()"
+                                onblur="snapFractionInput(this, calculateCrown)"
+                                onkeydown="handleFractionKeydown(event, this, calculateCrown)">
                         </div>
                         <div class="flex flex-col justify-end">
                             <div class="bg-[#181B1F] px-3 py-2 rounded-lg border border-[#2B3038] text-[11px] space-y-0.5">
@@ -198,95 +172,108 @@
                     </div>
                     <p class="text-[11px] text-[#8C95A3] leading-relaxed" id="cutLengthNote"></p>
                 </div>
+            </div>
 
-                <!-- Minimized Explainer: Collapsible Details -->
-                <details class="text-xs text-[#A6B0BE] bg-[#121417] border border-[#24282F] rounded-xl p-3 cursor-pointer group">
-                    <summary class="font-bold text-[#CCDA46] flex items-center justify-between select-none uppercase tracking-wide text-[11px]">
-                        <span>ℹ️ Why does the keeper side flip on the saw?</span>
-                        <span class="text-[10px] text-[#CCDA46] group-open:rotate-180 transition">▼</span>
-                    </summary>
-                    <p class="mt-2 text-[11px] text-[#8C95A3] leading-relaxed border-t border-[#24282F] pt-2">
-                        When you flip a board upside-down onto the saw (ceiling edge flat on the bed, wall edge flush against the fence), left and right ends trade places. A <strong>Left Wall Piece</strong> is held on the <strong>Right of the blade</strong>, and a <strong>Right Wall Piece</strong> is held on the <strong>Left of the blade</strong>.
-                    </p>
-                </details>
+            <!-- TOOL 3 PRIMARY INPUTS: WAINSCOTING CALCULATOR -->
+            <div id="tool-wainscot" class="bg-[#181B1F] border border-[#24282F] p-6 rounded-2xl shadow-xl space-y-5 hidden">
+                <div class="flex items-center justify-between border-b border-[#24282F] pb-3.5">
+                    <h2 class="text-base font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#CCDA46]"></span>
+                        Wainscot Layout Engine
+                    </h2>
+                    <div class="flex items-center gap-3">
+                        <button onclick="printWainscotCutSheet()" class="px-3 py-1.5 rounded-lg bg-[#CCDA46] text-[#121417] text-xs font-black uppercase tracking-wider shadow-sm hover:bg-[#d8e655] transition cursor-pointer flex items-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            Print Cut Sheet
+                        </button>
+                        <button onclick="resetWainscot()" class="text-xs font-bold text-[#E52322] hover:text-[#ff4746] transition cursor-pointer uppercase tracking-wider">Reset</button>
+                    </div>
+                </div>
 
-                <!-- Demoted Hierarchy Section: Spring Angle, Presets & Integrated Calibration -->
-                <div class="pt-4 border-t border-[#24282F] space-y-4">
+                <!-- Primary Wall Dimensions (Fraction-Enabled) -->
+                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[11px] font-bold text-[#5A6370] uppercase tracking-wider mb-2">Crown Spring Angle Preset</label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button onclick="setCrownSpring(35.1)" class="touch-target spring-btn bg-[#CCDA46] text-[#121417] font-black text-xs py-2 rounded-xl transition cursor-pointer shadow-sm uppercase tracking-wider" id="spring-35.1">35.1° (Profile)</button>
-                            <button onclick="setCrownSpring(38)" class="touch-target spring-btn bg-[#14171A] border border-[#24282F] text-[#8C95A3] hover:text-white text-xs py-2 rounded-xl transition cursor-pointer uppercase tracking-wider font-bold" id="spring-38">38° Standard</button>
-                            <button onclick="setCrownSpring(45)" class="touch-target spring-btn bg-[#14171A] border border-[#24282F] text-[#8C95A3] hover:text-white text-xs py-2 rounded-xl transition cursor-pointer uppercase tracking-wider font-bold" id="spring-45">45° / 45°</button>
-                        </div>
+                        <label for="wainscotWallLength" class="block text-xs font-bold text-[#A6B0BE] uppercase tracking-wider mb-1.5">Total Wall Run (in)</label>
+                        <input type="text" id="wainscotWallLength" value='144"' data-inch="true"
+                            class="w-full bg-[#101215] border border-[#2B3038] rounded-xl px-4 py-3 text-white text-lg focus:outline-none focus:border-[#CCDA46] focus:ring-1 focus:ring-[#CCDA46] font-extrabold transition"
+                            oninput="calculateWainscot()"
+                            onblur="snapFractionInput(this, calculateWainscot)"
+                            onkeydown="handleFractionKeydown(event, this, calculateWainscot)">
                     </div>
-
                     <div>
-                        <label class="block text-[11px] font-bold text-[#5A6370] uppercase tracking-wider mb-2">Quick Wall Corner Presets</label>
-                        <div class="grid grid-cols-4 gap-2">
-                            <button onclick="setCrownAngle(90)" class="touch-target bg-[#14171A] border border-[#24282F] hover:border-[#CCDA46] text-xs py-1.5 rounded-lg text-[#8C95A3] hover:text-white font-bold transition cursor-pointer">90° Square</button>
-                            <button onclick="setCrownAngle(120)" class="touch-target bg-[#14171A] border border-[#24282F] hover:border-[#CCDA46] text-xs py-1.5 rounded-lg text-[#8C95A3] hover:text-white font-bold transition cursor-pointer">120° Hex</button>
-                            <button onclick="setCrownAngle(135)" class="touch-target bg-[#14171A] border border-[#24282F] hover:border-[#CCDA46] text-xs py-1.5 rounded-lg text-[#8C95A3] hover:text-white font-bold transition cursor-pointer">135° Bay/Oct</button>
-                            <button onclick="setCrownAngle(60)" class="touch-target bg-[#14171A] border border-[#24282F] hover:border-[#CCDA46] text-xs py-1.5 rounded-lg text-[#8C95A3] hover:text-white font-bold transition cursor-pointer">60° Acute</button>
-                        </div>
+                        <label for="wainscotHeight" class="block text-xs font-bold text-[#A6B0BE] uppercase tracking-wider mb-1.5">Total Height (in)</label>
+                        <input type="text" id="wainscotHeight" value='36"' data-inch="true"
+                            class="w-full bg-[#101215] border border-[#2B3038] rounded-xl px-4 py-3 text-white text-lg focus:outline-none focus:border-[#CCDA46] focus:ring-1 focus:ring-[#CCDA46] font-extrabold transition"
+                            oninput="calculateWainscot()"
+                            onblur="snapFractionInput(this, calculateWainscot)"
+                            onkeydown="handleFractionKeydown(event, this, calculateWainscot)">
                     </div>
+                </div>
 
-                    <!-- Integrated Saw Calibration -->
-                    <div class="bg-[#121417] border border-[#24282F] p-3.5 rounded-xl space-y-1.5">
-                        <label for="sawCorrectionCrown" class="block text-xs font-bold text-[#A6B0BE] flex items-center justify-between uppercase tracking-wider">
-                            <span>Saw Scale Fine-Tune Offset</span>
-                            <span class="text-[10px] text-[#5A6370] font-normal normal-case">Defaults to -0.5°</span>
-                        </label>
-                        <div class="relative">
-                            <input type="number" id="sawCorrectionCrown" value="-0.5" min="-5" max="5" step="0.1" 
-                                class="w-full bg-[#0E1012] border border-[#2B3038] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#CCDA46] text-sm font-bold transition"
-                                oninput="syncCalibration(this.value)">
-                            <span class="absolute right-3.5 top-2 text-[#5A6370] font-bold text-sm">°</span>
-                        </div>
+                <!-- Number of Panels with Stepper -->
+                <div class="bg-[#121417] border border-[#24282F] p-4 rounded-xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-[#A6B0BE] uppercase tracking-wider">Number of Panels</label>
+                        <span class="text-[11px] font-black text-[#CCDA46]" id="panelCountDisplay">5 Panels</span>
                     </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="adjustPanels(-1)" class="touch-target bg-[#1A1D21] hover:bg-[#24282F] border border-[#2B3038] rounded-lg text-white font-black text-lg px-4 py-1.5 transition cursor-pointer">−</button>
+                        <input type="range" id="panelSlider" min="1" max="14" value="5" step="1" 
+                            class="flex-1 accent-[#CCDA46] cursor-pointer" 
+                            oninput="setPanelCount(this.value)">
+                        <button onclick="adjustPanels(1)" class="touch-target bg-[#1A1D21] hover:bg-[#24282F] border border-[#2B3038] rounded-lg text-white font-black text-lg px-4 py-1.5 transition cursor-pointer">+</button>
+                    </div>
+                    <!-- Quick Span Suggestions -->
+                    <div class="flex items-center gap-2 pt-1 overflow-x-auto text-[11px]" id="panelSuggestions"></div>
+                </div>
+
+                <!-- Trim Framing Specs (Fraction-Enabled) -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label for="wainscotStileWidth" class="block text-[11px] font-bold text-[#A6B0BE] uppercase tracking-wider mb-1">Stile Width</label>
+                        <input type="text" id="wainscotStileWidth" value='3-1/2"' data-inch="true"
+                            class="w-full bg-[#101215] border border-[#2B3038] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#CCDA46] font-bold text-sm transition"
+                            oninput="calculateWainscot()"
+                            onblur="snapFractionInput(this, calculateWainscot)"
+                            onkeydown="handleFractionKeydown(event, this, calculateWainscot)">
+                    </div>
+                    <div>
+                        <label for="wainscotTopRail" class="block text-[11px] font-bold text-[#A6B0BE] uppercase tracking-wider mb-1">Top Rail</label>
+                        <input type="text" id="wainscotTopRail" value='3-1/2"' data-inch="true"
+                            class="w-full bg-[#101215] border border-[#2B3038] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#CCDA46] font-bold text-sm transition"
+                            oninput="calculateWainscot()"
+                            onblur="snapFractionInput(this, calculateWainscot)"
+                            onkeydown="handleFractionKeydown(event, this, calculateWainscot)">
+                    </div>
+                    <div>
+                        <label for="wainscotBottomRail" class="block text-[11px] font-bold text-[#A6B0BE] uppercase tracking-wider mb-1">Baseboard / Rail</label>
+                        <input type="text" id="wainscotBottomRail" value='5-1/2"' data-inch="true"
+                            class="w-full bg-[#101215] border border-[#2B3038] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#CCDA46] font-bold text-sm transition"
+                            oninput="calculateWainscot()"
+                            onblur="snapFractionInput(this, calculateWainscot)"
+                            onkeydown="handleFractionKeydown(event, this, calculateWainscot)">
+                    </div>
+                </div>
+
+                <!-- End Stile Option -->
+                <div class="pt-2 border-t border-[#24282F] flex items-center justify-between text-xs">
+                    <span class="text-[#A6B0BE] font-bold uppercase tracking-wider text-[11px]">End Stiles (Corners / Casings):</span>
+                    <select id="endStileMode" onchange="calculateWainscot()" class="bg-[#101215] border border-[#2B3038] rounded-lg px-2.5 py-1.5 text-white font-bold text-xs focus:outline-none focus:border-[#CCDA46] cursor-pointer">
+                        <option value="full">Full Width (Both Ends)</option>
+                        <option value="half">Half Width (Corner Butt)</option>
+                    </select>
                 </div>
             </div>
 
         </div>
 
-        <!-- Right Column: Results & Interactive Visualizer -->
-        <div class="lg:col-span-6 space-y-6 flex flex-col">
+        <!-- Right Column: Output Cards (Top), Visualizer (Middle), & Demoted Settings (Bottom) -->
+        <div class="lg:col-span-7 space-y-6 flex flex-col">
             
-            <!-- Visualizer Card -->
-            <div class="bg-[#181B1F] border border-[#24282F] p-6 rounded-2xl shadow-xl flex-1 flex flex-col relative">
-                
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 z-10 gap-3">
-                    <h2 class="text-sm font-black text-white tracking-wider uppercase flex items-center gap-2" id="visualizerTitle">
-                        <span class="w-2 h-2 rounded-full bg-[#CCDA46]"></span>
-                        Joint Visualizer
-                    </h2>
-                    
-                    <!-- Sliding Segmented Control: 3D View Toggle -->
-                    <div id="three-view-toggle" class="hidden relative flex bg-[#101215] p-1 rounded-lg border border-[#2B3038] text-[11px] font-bold shadow-md">
-                        <!-- Gliding View Pill -->
-                        <div id="view-slider" class="absolute top-1 bottom-1 bg-[#CCDA46] rounded-md transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] pointer-events-none"></div>
-
-                        <button onclick="setThreeView('saw')" id="btn-view-saw" class="relative z-10 px-3.5 py-1.5 text-[#121417] rounded-md transition-colors duration-200 cursor-pointer font-black uppercase tracking-wider">Shop Saw</button>
-                        <button onclick="setThreeView('installed')" id="btn-view-installed" class="relative z-10 px-3.5 py-1.5 text-[#8C95A3] hover:text-white rounded-md transition-colors duration-200 cursor-pointer font-bold uppercase tracking-wider">Installed</button>
-                    </div>
-
-                    <span id="dimensionBadge" class="text-xs bg-[#101215] border border-[#2B3038] text-[#CCDA46] font-bold px-3 py-1 rounded-lg uppercase tracking-wider">Symmetric 90°</span>
-                </div>
-                
-                <!-- Canvas Container -->
-                <div id="visualizer-wrapper" class="relative bg-[#101215] border border-[#24282F] rounded-xl overflow-hidden flex-1 min-h-[380px] flex items-center justify-center shadow-inner">
-                    <canvas id="jointCanvas" class="w-full h-full absolute inset-0 z-10"></canvas>
-                    <div id="three-container" class="w-full h-full absolute inset-0 z-20 hidden"></div>
-                    <!-- 3D Legend Overlay -->
-                    <div id="three-legend" class="hidden absolute bottom-3 left-3 z-30 pointer-events-none bg-[#0E1012]/90 border border-[#24282F] px-3.5 py-2.5 rounded-lg text-[11px] text-[#A6B0BE] space-y-1 backdrop-blur-sm">
-                        <div id="legend-line-1">🟫 <b>Solid Oak:</b> Keeper Piece &nbsp;|&nbsp; 🟥 <b>Red:</b> Waste Offcut</div>
-                        <div id="legend-line-2" class="text-[#5A6370] font-medium">Drag to orbit • Scroll to zoom</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Output Cards Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- 1. TOP OF RIGHT COLUMN: Output Cards Grid (Miter & Crown Tools) -->
+            <div id="cards-miter-crown" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 
                 <!-- Output Card A -->
                 <div class="bg-[#181B1F] border border-[#24282F] p-5 rounded-2xl shadow-xl space-y-3 relative overflow-hidden">
@@ -296,13 +283,11 @@
                         <span class="text-xs bg-[#101215] border border-[#2B3038] px-2.5 py-1 rounded font-bold text-[#A6B0BE]" id="labelWidthA">1"</span>
                     </div>
 
-                    <!-- Prominent Saw Dial Setting (Hero Metric) -->
                     <div class="space-y-0.5">
                         <span class="text-[10px] font-black text-[#8C95A3] uppercase tracking-widest" id="labelSawTitleA">Saw Dial Setting:</span>
                         <div class="text-4xl sm:text-5xl font-black text-[#CCDA46] tracking-tight" id="sawA">44.5°</div>
                     </div>
 
-                    <!-- Secondary metric: Actual Miter Degree Reference -->
                     <div class="pt-2.5 border-t border-[#24282F] flex items-center justify-between text-xs">
                         <span class="text-[#8C95A3] font-bold uppercase tracking-wider text-[11px]" id="descMiterA">Actual Miter Cut:</span>
                         <span class="font-extrabold text-white bg-[#101215] border border-[#2B3038] px-2.5 py-1 rounded-md" id="miterA">45.00°</span>
@@ -321,13 +306,11 @@
                         <span class="text-xs bg-[#101215] border border-[#2B3038] px-2.5 py-1 rounded font-bold text-[#A6B0BE]" id="labelWidthB">1"</span>
                     </div>
 
-                    <!-- Prominent Saw Dial Setting (Hero Metric) -->
                     <div class="space-y-0.5">
                         <span class="text-[10px] font-black text-[#8C95A3] uppercase tracking-widest" id="labelSawTitleB">Saw Dial Setting:</span>
                         <div class="text-4xl sm:text-5xl font-black text-[#CCDA46] tracking-tight" id="sawB">44.5°</div>
                     </div>
 
-                    <!-- Secondary metric: Actual Miter Degree Reference -->
                     <div class="pt-2.5 border-t border-[#24282F] flex items-center justify-between text-xs">
                         <span class="text-[#8C95A3] font-bold uppercase tracking-wider text-[11px]" id="descMiterB">Actual Miter Cut:</span>
                         <span class="font-extrabold text-white bg-[#101215] border border-[#2B3038] px-2.5 py-1 rounded-md" id="miterB">45.00°</span>
@@ -340,9 +323,221 @@
 
             </div>
 
+            <!-- 1B. TOP OF RIGHT COLUMN: Output Cards Grid (Wainscoting Tool) -->
+            <div id="cards-wainscot" class="grid grid-cols-1 sm:grid-cols-2 gap-4 hidden">
+                
+                <!-- Wainscot Card 1: Cut Dimensions -->
+                <div class="bg-[#181B1F] border border-[#24282F] p-5 rounded-2xl shadow-xl space-y-3 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-[#CCDA46]/5 rounded-bl-full pointer-events-none"></div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase tracking-wider text-[#CCDA46]">Cut Dimensions</span>
+                        <span class="text-xs bg-[#101215] border border-[#2B3038] px-2.5 py-1 rounded font-bold text-[#A6B0BE]" id="wainscotTotalParts">--</span>
+                    </div>
+
+                    <div class="space-y-0.5">
+                        <span class="text-[10px] font-black text-[#8C95A3] uppercase tracking-widest">Panel Opening Width:</span>
+                        <div class="text-3xl sm:text-4xl font-black text-[#CCDA46] tracking-tight" id="wainscotPanelWidthHero">--</div>
+                    </div>
+
+                    <div class="pt-2.5 border-t border-[#24282F] space-y-1.5 text-xs text-[#A6B0BE]">
+                        <div class="flex justify-between">
+                            <span class="font-bold">Stile Cut Length:</span>
+                            <span class="font-extrabold text-white" id="wainscotStileLength">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-bold">Panel Opening Height:</span>
+                            <span class="font-extrabold text-white" id="wainscotPanelHeight">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-bold">Top/Bottom Rails Run:</span>
+                            <span class="font-extrabold text-white" id="wainscotRailLength">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wainscot Card 2: Cumulative Tape Marks -->
+                <div class="bg-[#181B1F] border border-[#24282F] p-5 rounded-2xl shadow-xl space-y-3 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-[#CCDA46]/5 rounded-bl-full pointer-events-none"></div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase tracking-wider text-[#CCDA46]">Tape Measure Layout</span>
+                        <span class="text-[10px] font-bold text-[#8C95A3] uppercase">Cumulative from Left</span>
+                    </div>
+
+                    <div class="space-y-0.5">
+                        <span class="text-[10px] font-black text-[#8C95A3] uppercase tracking-widest">Mark Tape Without Moving:</span>
+                        <div class="text-xs font-bold text-white pt-1">Hook tape to left edge & mark:</div>
+                    </div>
+
+                    <!-- Scrollable Stile Tape Guide -->
+                    <div class="max-h-[105px] overflow-y-auto space-y-1 pr-1 text-[11px]" id="wainscotTapeList">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 2. MIDDLE OF RIGHT COLUMN: Interactive Visualizer Card -->
+            <div class="bg-[#181B1F] border border-[#24282F] p-6 rounded-2xl shadow-xl flex-1 flex flex-col relative">
+                
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 z-10 gap-3">
+                    <h2 class="text-sm font-black text-white tracking-wider uppercase flex items-center gap-2" id="visualizerTitle">
+                        <span class="w-2 h-2 rounded-full bg-[#CCDA46]"></span>
+                        Zoomed Joint Visualizer
+                    </h2>
+                    
+                    <!-- Sliding Segmented Control: 3D View Toggle (Only in Crown Mode) -->
+                    <div id="three-view-toggle" class="hidden relative flex bg-[#101215] p-1 rounded-lg border border-[#2B3038] text-[11px] font-bold shadow-md">
+                        <div id="view-slider" class="absolute top-1 bottom-1 bg-[#CCDA46] rounded-md transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] pointer-events-none"></div>
+                        <button onclick="setThreeView('saw')" id="btn-view-saw" class="relative z-10 px-3.5 py-1.5 text-[#121417] rounded-md transition-colors duration-200 cursor-pointer font-black uppercase tracking-wider">Shop Saw</button>
+                        <button onclick="setThreeView('installed')" id="btn-view-installed" class="relative z-10 px-3.5 py-1.5 text-[#8C95A3] hover:text-white rounded-md transition-colors duration-200 cursor-pointer font-bold uppercase tracking-wider">Installed</button>
+                    </div>
+
+                    <span id="dimensionBadge" class="text-xs bg-[#101215] border border-[#2B3038] text-[#CCDA46] font-bold px-3 py-1 rounded-lg uppercase tracking-wider">Symmetric 90°</span>
+                </div>
+                
+                <!-- Canvas Container -->
+                <div id="visualizer-wrapper" class="relative bg-[#101215] border border-[#24282F] rounded-xl overflow-hidden flex-1 min-h-[360px] flex items-center justify-center shadow-inner">
+                    <canvas id="jointCanvas" class="w-full h-full absolute inset-0 z-10"></canvas>
+                    <canvas id="wainscotCanvas" class="w-full h-full absolute inset-0 z-10 hidden"></canvas>
+                    <div id="three-container" class="w-full h-full absolute inset-0 z-20 hidden"></div>
+                    <!-- 3D Legend Overlay -->
+                    <div id="three-legend" class="hidden absolute bottom-3 left-3 z-30 pointer-events-none bg-[#0E1012]/90 border border-[#24282F] px-3.5 py-2.5 rounded-lg text-[11px] text-[#A6B0BE] space-y-1 backdrop-blur-sm">
+                        <div id="legend-line-1">🟫 <b>Solid Oak:</b> Keeper Piece &nbsp;|&nbsp; 🟥 <b>Red:</b> Waste Offcut</div>
+                        <div id="legend-line-2" class="text-[#5A6370] font-medium">Drag to orbit • Scroll to zoom (View persists)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3A. BOTTOM DEMOTED SECTION: Miter Angles Secondary Settings -->
+            <div id="demoted-miter" class="bg-[#14171A] border border-[#24282F] p-5 rounded-2xl space-y-4">
+                <div class="flex items-center justify-between border-b border-[#24282F] pb-2">
+                    <span class="text-[11px] font-black uppercase tracking-wider text-[#5A6370]">Secondary Setup & Calibration</span>
+                    <span class="text-[10px] font-bold text-[#5A6370]">1/16" Snap Enabled</span>
+                </div>
+
+                <!-- Demoted Board Widths & Measurement Unit -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label for="widthA" class="block text-[11px] font-bold text-[#8C95A3] uppercase tracking-wider mb-1">Board A Width</label>
+                        <input type="text" id="widthA" value='1"' data-inch="true"
+                            class="w-full bg-[#101215] border border-[#2B3038] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#CCDA46] font-bold transition"
+                            oninput="calculateMiter()"
+                            onblur="snapFractionInput(this, calculateMiter)"
+                            onkeydown="handleFractionKeydown(event, this, calculateMiter)">
+                    </div>
+                    <div>
+                        <label for="widthB" class="block text-[11px] font-bold text-[#8C95A3] uppercase tracking-wider mb-1">Board B Width</label>
+                        <input type="text" id="widthB" value='1"' data-inch="true"
+                            class="w-full bg-[#101215] border border-[#2B3038] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#CCDA46] font-bold transition"
+                            oninput="calculateMiter()"
+                            onblur="snapFractionInput(this, calculateMiter)"
+                            onkeydown="handleFractionKeydown(event, this, calculateMiter)">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-[#8C95A3] uppercase tracking-wider mb-1">Measurement Unit</label>
+                        <div class="grid grid-cols-3 gap-1 bg-[#101215] p-1 rounded-lg border border-[#2B3038]">
+                            <button type="button" onclick="setUnit('mm')" id="unit-mm" class="py-1.5 text-xs font-bold rounded text-[#8C95A3] hover:text-white transition cursor-pointer">mm</button>
+                            <button type="button" onclick="setUnit('cm')" id="unit-cm" class="py-1.5 text-xs font-bold rounded text-[#8C95A3] hover:text-white transition cursor-pointer">cm</button>
+                            <button type="button" onclick="setUnit('in')" id="unit-in" class="py-1.5 text-xs font-black rounded bg-[#CCDA46] text-[#121417] transition cursor-pointer">in</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demoted Quick Corner Presets & Saw Scale Calibration -->
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2 border-t border-[#24282F]/60 items-end">
+                    <div class="sm:col-span-8">
+                        <label class="block text-[10px] font-bold text-[#5A6370] uppercase tracking-wider mb-1.5">Quick Corner Presets</label>
+                        <div class="grid grid-cols-4 gap-1.5">
+                            <button onclick="setJointAngle(90)" class="bg-[#101215] border border-[#24282F] hover:border-[#CCDA46] text-[11px] py-2 rounded-lg text-[#8C95A3] hover:text-white font-bold transition cursor-pointer">90° Sq</button>
+                            <button onclick="setJointAngle(120)" class="bg-[#101215] border border-[#24282F] hover:border-[#CCDA46] text-[11px] py-2 rounded-lg text-[#8C95A3] hover:text-white font-bold transition cursor-pointer">120° Hex</button>
+                            <button onclick="setJointAngle(135)" class="bg-[#101215] border border-[#24282F] hover:border-[#CCDA46] text-[11px] py-2 rounded-lg text-[#8C95A3] hover:text-white font-bold transition cursor-pointer">135° Oct</button>
+                            <button onclick="setJointAngle(60)" class="bg-[#101215] border border-[#24282F] hover:border-[#CCDA46] text-[11px] py-2 rounded-lg text-[#8C95A3] hover:text-white font-bold transition cursor-pointer">60° Acute</button>
+                        </div>
+                    </div>
+                    <div class="sm:col-span-4">
+                        <label for="sawCorrectionMiter" class="block text-[10px] font-bold text-[#5A6370] uppercase tracking-wider mb-1.5">Saw Fine-Tune Offset</label>
+                        <div class="relative">
+                            <input type="number" id="sawCorrectionMiter" value="-0.5" min="-5" max="5" step="0.1" 
+                                class="w-full bg-[#101215] border border-[#2B3038] rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-[#CCDA46] text-xs font-bold transition"
+                                oninput="syncCalibration(this.value)">
+                            <span class="absolute right-3 top-1.5 text-[#5A6370] font-bold text-xs">°</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3B. BOTTOM DEMOTED SECTION: Crown Molding Secondary Settings -->
+            <div id="demoted-crown" class="bg-[#14171A] border border-[#24282F] p-5 rounded-2xl space-y-4 hidden">
+                <div class="flex items-center justify-between border-b border-[#24282F] pb-2">
+                    <span class="text-[11px] font-black uppercase tracking-wider text-[#5A6370]">Secondary Setup, Presets & Calibration</span>
+                    <span class="text-[10px] font-bold text-[#5A6370]">Defaults to 35.1° / -0.5°</span>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-[#5A6370] uppercase tracking-wider mb-1.5">Crown Spring Angle Preset</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="setCrownSpring(35.1)" class="spring-btn bg-[#CCDA46] text-[#121417] font-black text-xs py-2 rounded-lg transition cursor-pointer shadow-sm uppercase tracking-wider" id="spring-35.1">35.1° (Profile)</button>
+                        <button onclick="setCrownSpring(38)" class="spring-btn bg-[#101215] border border-[#24282F] text-[#8C95A3] hover:text-white text-xs py-2 rounded-lg transition cursor-pointer uppercase tracking-wider font-bold" id="spring-38">38° Standard</button>
+                        <button onclick="setCrownSpring(45)" class="spring-btn bg-[#101215] border border-[#24282F] text-[#8C95A3] hover:text-white text-xs py-2 rounded-lg transition cursor-pointer uppercase tracking-wider font-bold" id="spring-45">45° / 45°</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2 border-t border-[#24282F]/60 items-end">
+                    <div class="sm:col-span-8">
+                        <label class="block text-[10px] font-bold text-[#5A6370] uppercase tracking-wider mb-1.5">Quick Wall Corner Presets</label>
+                        <div class="grid grid-cols-4 gap-1.5">
+                            <button onclick="setCrownAngle(90)" class="bg-[#101215] border border-[#24282F] hover:border-[#CCDA46] text-[11px] py-2 rounded-lg text-[#8C95A3] hover:text-white font-bold transition cursor-pointer">90° Sq</button>
+                            <button onclick="setCrownAngle(120)" class="bg-[#101215] border border-[#24282F] hover:border-[#CCDA46] text-[11px] py-2 rounded-lg text-[#8C95A3] hover:text-white font-bold transition cursor-pointer">120° Hex</button>
+                            <button onclick="setCrownAngle(135)" class="bg-[#101215] border border-[#24282F] hover:border-[#CCDA46] text-[11px] py-2 rounded-lg text-[#8C95A3] hover:text-white font-bold transition cursor-pointer">135° Bay</button>
+                            <button onclick="setCrownAngle(60)" class="bg-[#101215] border border-[#24282F] hover:border-[#CCDA46] text-[11px] py-2 rounded-lg text-[#8C95A3] hover:text-white font-bold transition cursor-pointer">60° Acute</button>
+                        </div>
+                    </div>
+                    <div class="sm:col-span-4">
+                        <label for="sawCorrectionCrown" class="block text-[10px] font-bold text-[#5A6370] uppercase tracking-wider mb-1.5">Saw Fine-Tune Offset</label>
+                        <div class="relative">
+                            <input type="number" id="sawCorrectionCrown" value="-0.5" min="-5" max="5" step="0.1" 
+                                class="w-full bg-[#101215] border border-[#2B3038] rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-[#CCDA46] text-xs font-bold transition"
+                                oninput="syncCalibration(this.value)">
+                            <span class="absolute right-3 top-1.5 text-[#5A6370] font-bold text-xs">°</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </main>
+
+    <!-- Dedicated Printer-Friendly Wainscot Cut Sheet (Hidden on Screen, Visible on Print) -->
+    <section id="print-sheet" class="hidden">
+        <div style="border-bottom: 3px solid #000; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <h1 style="font-size: 24px; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: -0.5px;">MiterCraft Pro — Wainscoting Cut & Layout Sheet</h1>
+                <p style="font-size: 12px; margin: 4px 0 0 0; color: #333; font-weight: 600;" id="printSubheader">Wall Specification Summary</p>
+            </div>
+            <div style="font-size: 11px; font-weight: 700; text-align: right; color: #444;" id="printTimestamp"></div>
+        </div>
+
+        <!-- Elevation Drawing Snapshot -->
+        <div style="border: 2px solid #000; border-radius: 8px; padding: 12px; margin-bottom: 20px; text-align: center; background: #fafafa;">
+            <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">Architectural Wall Elevation</div>
+            <img id="printElevationImg" alt="Wainscot Elevation Diagram" style="max-width: 100%; height: auto; max-height: 270px; margin: 0 auto; display: block;" />
+        </div>
+
+        <!-- Two-Column Print Tables: Cut List & Cumulative Tape Marks -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div style="border: 2px solid #000; border-radius: 8px; padding: 14px;">
+                <h2 style="font-size: 14px; font-weight: 900; text-transform: uppercase; margin: 0 0 10px 0; border-bottom: 1px solid #000; padding-bottom: 6px;">1. Master Cut List & Dimensions</h2>
+                <table style="width: 100%; font-size: 12px; border-collapse: collapse;" id="printCutTable"></table>
+            </div>
+
+            <div style="border: 2px solid #000; border-radius: 8px; padding: 14px;">
+                <h2 style="font-size: 14px; font-weight: 900; text-transform: uppercase; margin: 0 0 10px 0; border-bottom: 1px solid #000; padding-bottom: 6px;">2. Cumulative Tape Measure Layout Marks</h2>
+                <p style="font-size: 11px; margin: 0 0 8px 0; color: #333;">Hook tape measure at the <b>Left Wall Edge (0")</b> and mark each stile edge:</p>
+                <table style="width: 100%; font-size: 12px; border-collapse: collapse;" id="printTapeTable"></table>
+            </div>
+        </div>
+    </section>
 
     <!-- App Logic & Calculation Engine -->
     <script>
@@ -369,7 +564,7 @@
             triggerRecalc();
         }
 
-        // Fraction Helper: Rounds inches to nearest 1/16" and formats with reduced fraction
+        // Fraction Helper: Rounds inches to nearest 1/16" and formats with a hyphen (e.g. 31-5/16")
         function formatInchesTo16th(valInches) {
             if (isNaN(valInches)) return '--';
             const sign = valInches < 0 ? '-' : '';
@@ -398,19 +593,96 @@
             if (whole === 0) {
                 return `${sign}${num}/${den}"`;
             }
-            return `${sign}${whole} ${num}/${den}"`;
+            return `${sign}${whole}-${num}/${den}"`;
+        }
+
+        // Parse Fractional or Decimal String Input (e.g. "108-1/8", "108 1/8", "3/4", "108.125")
+        function parseDimensionInput(rawStr, fallback = 1) {
+            if (typeof rawStr === 'number') return rawStr;
+            if (!rawStr) return fallback;
+            let s = String(rawStr).trim().replace(/"|in|inches/gi, '').trim();
+            if (!s) return fallback;
+
+            // Mixed fraction with hyphen or space: e.g. "108-1/8" or "108 1/8"
+            const mixedMatch = s.match(/^([+-]?\d+)\s*(?:-|\s)\s*(\d+)\s*\/\s*(\d+)$/);
+            if (mixedMatch) {
+                const whole = parseFloat(mixedMatch[1]);
+                const num = parseFloat(mixedMatch[2]);
+                const den = parseFloat(mixedMatch[3]);
+                if (den !== 0) {
+                    const sign = whole < 0 ? -1 : 1;
+                    return whole + sign * (num / den);
+                }
+            }
+
+            // Simple fraction: e.g. "5/16"
+            const fracMatch = s.match(/^([+-]?\d+)\s*\/\s*(\d+)$/);
+            if (fracMatch) {
+                const num = parseFloat(fracMatch[1]);
+                const den = parseFloat(fracMatch[2]);
+                if (den !== 0) return num / den;
+            }
+
+            // Standard decimal or integer
+            const numVal = parseFloat(s);
+            return isNaN(numVal) ? fallback : numVal;
+        }
+
+        // Snap input box value to nearest 1/16" on blur
+        function snapFractionInput(inputEl, callbackFn) {
+            const isMiterWidth = (inputEl.id === 'widthA' || inputEl.id === 'widthB');
+            const useInches = isMiterWidth ? (currentUnit === 'in') : true;
+
+            let val = parseDimensionInput(inputEl.value, 1);
+            val = Math.max(0.0625, val);
+
+            if (useInches) {
+                const snapped = Math.round(val * 16) / 16;
+                inputEl.value = formatInchesTo16th(snapped);
+            } else {
+                inputEl.value = parseFloat(val.toFixed(2));
+            }
+            if (callbackFn) callbackFn();
+        }
+
+        // Allow Up/Down Arrow keys to step by 1/16" (0.0625") in fraction inputs, and Enter to snap
+        function handleFractionKeydown(e, inputEl, callbackFn) {
+            const isMiterWidth = (inputEl.id === 'widthA' || inputEl.id === 'widthB');
+            const useInches = isMiterWidth ? (currentUnit === 'in') : true;
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                snapFractionInput(inputEl, callbackFn);
+                inputEl.blur();
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                let val = parseDimensionInput(inputEl.value, 1);
+                const step = useInches ? 0.0625 : 1;
+                val += (e.key === 'ArrowUp' ? step : -step);
+                val = Math.max(step, val);
+                if (useInches) {
+                    const snapped = Math.round(val * 16) / 16;
+                    inputEl.value = formatInchesTo16th(snapped);
+                } else {
+                    inputEl.value = parseFloat(val.toFixed(2));
+                }
+                if (callbackFn) callbackFn();
+            }
         }
 
         function switchTool(tool) {
             currentTool = tool;
-            ['miter', 'crown'].forEach(t => {
-                document.getElementById(`tool-${t}`).classList.toggle('hidden', t !== tool);
+            ['miter', 'crown', 'wainscot'].forEach(t => {
+                const el = document.getElementById(`tool-${t}`);
+                if (el) el.classList.toggle('hidden', t !== tool);
                 
                 const btn = document.getElementById(`tab-${t}`);
-                if (t === tool) {
-                    btn.className = "relative z-10 px-5 py-2.5 rounded-lg text-[#121417] font-black uppercase tracking-wide transition-colors duration-200 cursor-pointer flex-1 sm:flex-initial text-center";
-                } else {
-                    btn.className = "relative z-10 px-5 py-2.5 rounded-lg text-[#8C95A3] hover:text-white font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer flex-1 sm:flex-initial text-center";
+                if (btn) {
+                    if (t === tool) {
+                        btn.className = "relative z-10 px-4 sm:px-5 py-2.5 rounded-lg text-[#121417] font-black uppercase tracking-wide transition-colors duration-200 cursor-pointer flex-1 sm:flex-initial text-center whitespace-nowrap";
+                    } else {
+                        btn.className = "relative z-10 px-4 sm:px-5 py-2.5 rounded-lg text-[#8C95A3] hover:text-white font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer flex-1 sm:flex-initial text-center whitespace-nowrap";
+                    }
                 }
             });
 
@@ -419,35 +691,57 @@
 
             document.getElementById('cheatA').classList.toggle('hidden', tool !== 'crown');
             document.getElementById('cheatB').classList.toggle('hidden', tool !== 'crown');
-            
+
             const jointCanvas = document.getElementById('jointCanvas');
+            const wainscotCanvas = document.getElementById('wainscotCanvas');
             const threeContainer = document.getElementById('three-container');
             const threeToggle = document.getElementById('three-view-toggle');
             const threeLegend = document.getElementById('three-legend');
+            const cardsMiterCrown = document.getElementById('cards-miter-crown');
+            const cardsWainscot = document.getElementById('cards-wainscot');
+            const demotedMiter = document.getElementById('demoted-miter');
+            const demotedCrown = document.getElementById('demoted-crown');
             
             if (tool === 'crown') {
                 jointCanvas.classList.add('hidden');
+                wainscotCanvas.classList.add('hidden');
                 threeContainer.classList.remove('hidden');
                 threeToggle.classList.remove('hidden');
                 threeLegend.classList.remove('hidden');
-                // Ensure 3D view toggle slider matches active view when revealed
+                cardsMiterCrown.classList.remove('hidden');
+                cardsWainscot.classList.add('hidden');
+                demotedMiter.classList.add('hidden');
+                demotedCrown.classList.remove('hidden');
                 setTimeout(() => {
                     updateSliderPosition(current3DView === 'saw' ? 'btn-view-saw' : 'btn-view-installed', 'view-slider');
                 }, 10);
                 if (window.resizeThreeJS) window.resizeThreeJS(); 
-            } else {
-                jointCanvas.classList.remove('hidden');
+                document.getElementById('visualizerTitle').innerHTML = '<span class="w-2 h-2 rounded-full bg-[#CCDA46]"></span> Crown Molding 3D Visualizer';
+                calculateCrown();
+            } else if (tool === 'wainscot') {
+                jointCanvas.classList.add('hidden');
+                wainscotCanvas.classList.remove('hidden');
                 threeContainer.classList.add('hidden');
                 threeToggle.classList.add('hidden');
                 threeLegend.classList.add('hidden');
-            }
-
-            if (tool === 'miter') {
+                cardsMiterCrown.classList.add('hidden');
+                cardsWainscot.classList.remove('hidden');
+                demotedMiter.classList.add('hidden');
+                demotedCrown.classList.add('hidden');
+                document.getElementById('visualizerTitle').innerHTML = '<span class="w-2 h-2 rounded-full bg-[#CCDA46]"></span> Wainscot Wall Elevation';
+                calculateWainscot();
+            } else {
+                jointCanvas.classList.remove('hidden');
+                wainscotCanvas.classList.add('hidden');
+                threeContainer.classList.add('hidden');
+                threeToggle.classList.add('hidden');
+                threeLegend.classList.add('hidden');
+                cardsMiterCrown.classList.remove('hidden');
+                cardsWainscot.classList.add('hidden');
+                demotedMiter.classList.remove('hidden');
+                demotedCrown.classList.add('hidden');
                 document.getElementById('visualizerTitle').innerHTML = '<span class="w-2 h-2 rounded-full bg-[#CCDA46]"></span> Zoomed Joint Visualizer';
                 calculateMiter();
-            } else if (tool === 'crown') {
-                document.getElementById('visualizerTitle').innerHTML = '<span class="w-2 h-2 rounded-full bg-[#CCDA46]"></span> Crown Molding 3D Visualizer';
-                calculateCrown();
             }
         }
 
@@ -471,8 +765,9 @@
             // Smoothly glide 3D view slider
             updateSliderPosition(viewMode === 'saw' ? 'btn-view-saw' : 'btn-view-installed', 'view-slider');
             
+            // Pass false so the camera view & zoom angle stay 100% persistent when toggling between Shop Saw and Installed
             if (window.toggleThreeEnvironment) {
-                window.toggleThreeEnvironment(viewMode, true);
+                window.toggleThreeEnvironment(viewMode, false);
             }
         }
 
@@ -481,9 +776,11 @@
             ['mm', 'cm', 'in'].forEach(u => {
                 const btn = document.getElementById(`unit-${u}`);
                 btn.className = u === unit 
-                    ? "touch-target py-2 text-xs font-black rounded-lg bg-[#CCDA46] text-[#121417] transition cursor-pointer shadow-sm" 
-                    : "touch-target py-2 text-xs font-bold rounded-lg text-[#8C95A3] hover:text-white transition cursor-pointer";
+                    ? "py-1.5 text-xs font-black rounded bg-[#CCDA46] text-[#121417] transition cursor-pointer" 
+                    : "py-1.5 text-xs font-bold rounded text-[#8C95A3] hover:text-white transition cursor-pointer";
             });
+            snapFractionInput(document.getElementById('widthA'));
+            snapFractionInput(document.getElementById('widthB'));
             if (currentTool === 'miter') calculateMiter();
         }
 
@@ -502,16 +799,16 @@
             [35.1, 38, 45].forEach(a => {
                 const btn = document.getElementById(`spring-${a}`);
                 btn.className = a === angle 
-                    ? "touch-target spring-btn bg-[#CCDA46] text-[#121417] font-black text-xs py-2 rounded-xl transition cursor-pointer shadow-sm uppercase tracking-wider" 
-                    : "touch-target spring-btn bg-[#14171A] border border-[#24282F] text-[#8C95A3] hover:text-white text-xs py-2 rounded-xl transition cursor-pointer uppercase tracking-wider font-bold";
+                    ? "spring-btn bg-[#CCDA46] text-[#121417] font-black text-xs py-2 rounded-lg transition cursor-pointer shadow-sm uppercase tracking-wider" 
+                    : "spring-btn bg-[#101215] border border-[#24282F] text-[#8C95A3] hover:text-white text-xs py-2 rounded-lg transition cursor-pointer uppercase tracking-wider font-bold";
             });
             calculateCrown();
         }
 
         function resetMiter() {
             document.getElementById('jointAngle').value = 90;
-            document.getElementById('widthA').value = 1;
-            document.getElementById('widthB').value = 1;
+            document.getElementById('widthA').value = '1"';
+            document.getElementById('widthB').value = '1"';
             syncCalibration(-0.5);
             setUnit('in');
             calculateMiter();
@@ -522,21 +819,49 @@
             document.getElementById('crownAngle').value = 90;
             document.getElementById('crownCorner').value = 'inside';
             document.getElementById('wallPosition').value = 'Left';
-            document.getElementById('wallLengthInches').value = 120;
+            document.getElementById('wallLengthInches').value = '120"';
             syncCalibration(-0.5);
             setThreeView('saw');
+            if (window.toggleThreeEnvironment) window.toggleThreeEnvironment('saw', true);
             calculateCrown();
+        }
+
+        function resetWainscot() {
+            document.getElementById('wainscotWallLength').value = '144"';
+            document.getElementById('wainscotHeight').value = '36"';
+            document.getElementById('panelSlider').value = 5;
+            document.getElementById('wainscotStileWidth').value = '3-1/2"';
+            document.getElementById('wainscotTopRail').value = '3-1/2"';
+            document.getElementById('wainscotBottomRail').value = '5-1/2"';
+            document.getElementById('endStileMode').value = 'full';
+            calculateWainscot();
+        }
+
+        function adjustPanels(delta) {
+            const slider = document.getElementById('panelSlider');
+            let val = parseInt(slider.value) + delta;
+            val = Math.max(1, Math.min(14, val));
+            slider.value = val;
+            calculateWainscot();
+        }
+
+        function setPanelCount(val) {
+            document.getElementById('panelSlider').value = val;
+            calculateWainscot();
         }
 
         function triggerRecalc() {
             if (currentTool === 'miter') calculateMiter();
             else if (currentTool === 'crown') calculateCrown();
+            else if (currentTool === 'wainscot') calculateWainscot();
         }
 
         function calculateMiter() {
             const thetaDeg = parseFloat(document.getElementById('jointAngle').value) || 90;
-            const wA = parseFloat(document.getElementById('widthA').value) || 1;
-            const wB = parseFloat(document.getElementById('widthB').value) || 1;
+            let rawWA = parseDimensionInput(document.getElementById('widthA').value, 1);
+            let rawWB = parseDimensionInput(document.getElementById('widthB').value, 1);
+            const wA = currentUnit === 'in' ? (Math.round(rawWA * 16) / 16) : rawWA;
+            const wB = currentUnit === 'in' ? (Math.round(rawWB * 16) / 16) : rawWB;
             const correction = globalCalibrationOffset;
 
             if (currentUnit === 'in') {
@@ -594,7 +919,8 @@
             const cornerAngleDeg = parseFloat(document.getElementById('crownAngle').value) || 90;
             const cornerType = document.getElementById('crownCorner').value;
             const wallPosition = document.getElementById('wallPosition').value;
-            const wallLenInput = parseFloat(document.getElementById('wallLengthInches').value) || 120;
+            const rawWallLen = parseDimensionInput(document.getElementById('wallLengthInches').value, 120);
+            const wallLenInput = Math.round(rawWallLen * 16) / 16;
             
             const halfCorner = cornerAngleDeg / 2;
             const trueMiterVal = Math.abs(90 - halfCorner);
@@ -657,6 +983,310 @@
             }
         }
 
+        // WAINSCOTING CALCULATION, ELEVATION & PRINT ENGINE
+        let latestWainscotData = {};
+
+        function calculateWainscot() {
+            const wallLength = Math.round(parseDimensionInput(document.getElementById('wainscotWallLength').value, 144) * 16) / 16;
+            const totalHeight = Math.round(parseDimensionInput(document.getElementById('wainscotHeight').value, 36) * 16) / 16;
+            const numPanels = parseInt(document.getElementById('panelSlider').value) || 5;
+            const stileWidth = Math.round(parseDimensionInput(document.getElementById('wainscotStileWidth').value, 3.5) * 16) / 16;
+            const topRail = Math.round(parseDimensionInput(document.getElementById('wainscotTopRail').value, 3.5) * 16) / 16;
+            const bottomRail = Math.round(parseDimensionInput(document.getElementById('wainscotBottomRail').value, 5.5) * 16) / 16;
+            const endStileMode = document.getElementById('endStileMode').value;
+
+            document.getElementById('panelCountDisplay').innerText = `${numPanels} ${numPanels === 1 ? 'Panel' : 'Panels'}`;
+
+            // Calculate stiles
+            const endStileWidth = (endStileMode === 'half') ? (stileWidth / 2) : stileWidth;
+            const numStiles = numPanels + 1;
+            const numInteriorStiles = Math.max(0, numPanels - 1);
+            const totalStileSpace = (2 * endStileWidth) + (numInteriorStiles * stileWidth);
+
+            const totalAvailableForPanels = wallLength - totalStileSpace;
+            const exactPanelWidth = Math.max(0, totalAvailableForPanels / numPanels);
+            const exactPanelHeight = Math.max(0, totalHeight - topRail - bottomRail);
+            const stileLength = exactPanelHeight;
+
+            // Update Hero Metric Cards
+            document.getElementById('wainscotPanelWidthHero').innerText = formatInchesTo16th(exactPanelWidth);
+            document.getElementById('wainscotTotalParts').innerText = `${numPanels} Panels • ${numStiles} Stiles`;
+            document.getElementById('wainscotStileLength').innerText = `${formatInchesTo16th(stileLength)} (${numStiles} pcs)`;
+            document.getElementById('wainscotPanelHeight').innerText = formatInchesTo16th(exactPanelHeight);
+            document.getElementById('wainscotRailLength').innerText = `${formatInchesTo16th(wallLength)} (Top & Bottom)`;
+
+            document.getElementById('dimensionBadge').innerText = `${formatInchesTo16th(wallLength)} Wall • ${numPanels} Panels`;
+
+            // Build Cumulative Tape Measure Marks & Suggestions
+            const tapeItems = buildWainscotTapeList(numPanels, stileWidth, endStileWidth, exactPanelWidth);
+            buildPanelSuggestions(wallLength, stileWidth, endStileWidth);
+
+            // Save state for Print View
+            latestWainscotData = {
+                wallLength, totalHeight, numPanels, numStiles, stileWidth, endStileWidth,
+                topRail, bottomRail, exactPanelWidth, exactPanelHeight, stileLength, endStileMode, tapeItems
+            };
+
+            // Draw 2D Elevation
+            drawWainscotElevation(wallLength, totalHeight, numPanels, stileWidth, endStileWidth, exactPanelWidth, topRail, bottomRail, exactPanelHeight, false);
+        }
+
+        function buildWainscotTapeList(numPanels, stileWidth, endStileWidth, panelWidth) {
+            const listEl = document.getElementById('wainscotTapeList');
+            listEl.innerHTML = '';
+
+            let currentPos = 0;
+            const items = [];
+
+            // Stile 1 (Left End)
+            items.push({ name: 'Stile 1 (Left)', start: currentPos, end: currentPos + endStileWidth });
+            currentPos += endStileWidth;
+
+            // Interior Stiles
+            for (let i = 1; i < numPanels; i++) {
+                currentPos += panelWidth;
+                items.push({ name: `Stile ${i + 1}`, start: currentPos, end: currentPos + stileWidth });
+                currentPos += stileWidth;
+            }
+
+            // Right End Stile
+            currentPos += panelWidth;
+            items.push({ name: `Stile ${numPanels + 1} (Right)`, start: currentPos, end: currentPos + endStileWidth });
+
+            items.forEach((item) => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center py-0.5 border-b border-[#24282F]/40 text-[#A6B0BE]";
+                div.innerHTML = `
+                    <span class="font-bold text-[#8C95A3]">${item.name}:</span>
+                    <span class="font-extrabold text-[#CCDA46]">${formatInchesTo16th(item.start)} <span class="text-[#8C95A3] font-normal">to</span> ${formatInchesTo16th(item.end)}</span>
+                `;
+                listEl.appendChild(div);
+            });
+
+            return items;
+        }
+
+        function buildPanelSuggestions(wallLength, stileWidth, endStileWidth) {
+            const container = document.getElementById('panelSuggestions');
+            container.innerHTML = '<span class="text-[#5A6370] uppercase font-bold text-[9px] self-center">Suggestions:</span>';
+
+            [3, 4, 5, 6, 7].forEach(count => {
+                const totalStiles = (2 * endStileWidth) + ((count - 1) * stileWidth);
+                const pWidth = (wallLength - totalStiles) / count;
+                if (pWidth > 6 && pWidth < 40) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = "px-2 py-1 rounded bg-[#101215] border border-[#2B3038] hover:border-[#CCDA46] text-[#A6B0BE] hover:text-white font-bold cursor-pointer transition whitespace-nowrap text-[10px]";
+                    btn.innerText = `${count}p: ${formatInchesTo16th(pWidth)}`;
+                    btn.onclick = () => setPanelCount(count);
+                    container.appendChild(btn);
+                }
+            });
+        }
+
+        // Draw Full Elevation View on Wainscot Canvas (Supports Screen Dark Theme & High-Contrast Print Mode)
+        function drawWainscotElevation(wallLen, totalH, numPanels, stileW, endStileW, panelW, topRailH, bottomRailH, panelH, isPrintMode = false) {
+            const canvas = document.getElementById('wainscotCanvas');
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            const width = isPrintMode ? 800 : rect.width;
+            const height = isPrintMode ? 360 : rect.height;
+
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            ctx.scale(dpr, dpr);
+
+            ctx.clearRect(0, 0, width, height);
+            if (isPrintMode) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, width, height);
+            }
+
+            const marginX = 45;
+            const marginY = 50;
+            const availW = width - (marginX * 2);
+            const availH = height - (marginY * 2);
+
+            const scale = Math.min(availW / wallLen, availH / totalH);
+            const drawW = wallLen * scale;
+            const drawH = totalH * scale;
+
+            const startX = (width - drawW) / 2;
+            const startY = (height - drawH) / 2 + 10;
+
+            const frameFill = isPrintMode ? '#e5e7eb' : '#22262B';
+            const frameStroke = isPrintMode ? '#000000' : '#3A424E';
+            const panelFill = isPrintMode ? '#ffffff' : '#9A6332';
+            const accentColor = isPrintMode ? '#000000' : '#CCDA46';
+
+            ctx.save();
+
+            // 1. Wall Backdrop
+            ctx.fillStyle = isPrintMode ? '#ffffff' : '#0F1114';
+            ctx.fillRect(startX, startY, drawW, drawH);
+
+            // 2. Baseboard / Bottom Rail
+            const bottomRailDrawH = bottomRailH * scale;
+            const bottomRailY = startY + drawH - bottomRailDrawH;
+            ctx.fillStyle = frameFill;
+            ctx.fillRect(startX, bottomRailY, drawW, bottomRailDrawH);
+            ctx.strokeStyle = frameStroke;
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(startX, bottomRailY, drawW, bottomRailDrawH);
+
+            // 3. Top Rail & Chair Rail Cap
+            const topRailDrawH = topRailH * scale;
+            ctx.fillStyle = frameFill;
+            ctx.fillRect(startX, startY, drawW, topRailDrawH);
+            ctx.strokeRect(startX, startY, drawW, topRailDrawH);
+
+            const capLipDrawH = Math.max(3, 1 * scale);
+            ctx.fillStyle = accentColor;
+            ctx.fillRect(startX - 2, startY - capLipDrawH, drawW + 4, capLipDrawH);
+
+            // 4. Stiles & Panels Layout
+            const stilesDrawH = panelH * scale;
+            const stilesY = startY + topRailDrawH;
+
+            let curX = startX;
+
+            // Left End Stile
+            const endStileDrawW = endStileW * scale;
+            ctx.fillStyle = frameFill;
+            ctx.fillRect(curX, stilesY, endStileDrawW, stilesDrawH);
+            ctx.strokeRect(curX, stilesY, endStileDrawW, stilesDrawH);
+            curX += endStileDrawW;
+
+            const stileDrawW = stileW * scale;
+            const panelDrawW = panelW * scale;
+
+            for (let i = 0; i < numPanels; i++) {
+                ctx.fillStyle = panelFill;
+                ctx.fillRect(curX, stilesY, panelDrawW, stilesDrawH);
+                
+                ctx.strokeStyle = isPrintMode ? '#000000' : '#121417';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(curX, stilesY, panelDrawW, stilesDrawH);
+
+                if (panelDrawW > 32) {
+                    ctx.fillStyle = accentColor;
+                    ctx.font = 'bold 11px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(formatInchesTo16th(panelW), curX + (panelDrawW / 2), stilesY + (stilesDrawH / 2) + 4);
+                }
+
+                curX += panelDrawW;
+
+                if (i < numPanels - 1) {
+                    ctx.fillStyle = frameFill;
+                    ctx.fillRect(curX, stilesY, stileDrawW, stilesDrawH);
+                    ctx.strokeStyle = frameStroke;
+                    ctx.strokeRect(curX, stilesY, stileDrawW, stilesDrawH);
+                    curX += stileDrawW;
+                }
+            }
+
+            // Right End Stile
+            ctx.fillStyle = frameFill;
+            ctx.fillRect(curX, stilesY, endStileDrawW, stilesDrawH);
+            ctx.strokeStyle = frameStroke;
+            ctx.strokeRect(curX, stilesY, endStileDrawW, stilesDrawH);
+
+            // 5. Dimension Guidelines
+            ctx.strokeStyle = accentColor;
+            ctx.lineWidth = 1.5;
+
+            // Top Total Wall Bracket
+            ctx.beginPath();
+            ctx.moveTo(startX, startY - 18);
+            ctx.lineTo(startX + drawW, startY - 18);
+            ctx.moveTo(startX, startY - 24);
+            ctx.lineTo(startX, startY - 12);
+            ctx.moveTo(startX + drawW, startY - 24);
+            ctx.lineTo(startX + drawW, startY - 12);
+            ctx.stroke();
+
+            ctx.fillStyle = accentColor;
+            ctx.font = 'bold 11px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`TOTAL RUN: ${formatInchesTo16th(wallLen)}`, startX + (drawW / 2), startY - 26);
+
+            // Left Height Bracket
+            ctx.beginPath();
+            ctx.moveTo(startX - 18, startY);
+            ctx.lineTo(startX - 18, startY + drawH);
+            ctx.moveTo(startX - 24, startY);
+            ctx.lineTo(startX - 12, startY);
+            ctx.moveTo(startX - 24, startY + drawH);
+            ctx.lineTo(startX - 12, startY + drawH);
+            ctx.stroke();
+
+            ctx.save();
+            ctx.translate(startX - 26, startY + (drawH / 2));
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillStyle = isPrintMode ? '#000000' : '#A6B0BE';
+            ctx.font = 'bold 10px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${formatInchesTo16th(totalH)} HEIGHT`, 0, 0);
+            ctx.restore();
+
+            ctx.restore();
+        }
+
+        // Trigger Printer-Friendly Cut Sheet
+        function printWainscotCutSheet() {
+            const d = latestWainscotData;
+            if (!d || !d.wallLength) calculateWainscot();
+
+            // Render high-contrast print version of canvas and snapshot to image
+            drawWainscotElevation(
+                d.wallLength, d.totalHeight, d.numPanels, d.stileWidth,
+                d.endStileWidth, d.exactPanelWidth, d.topRail, d.bottomRail, d.exactPanelHeight, true
+            );
+            const canvas = document.getElementById('wainscotCanvas');
+            document.getElementById('printElevationImg').src = canvas.toDataURL('image/png');
+
+            // Restore dark mode canvas immediately for screen
+            drawWainscotElevation(
+                d.wallLength, d.totalHeight, d.numPanels, d.stileWidth,
+                d.endStileWidth, d.exactPanelWidth, d.topRail, d.bottomRail, d.exactPanelHeight, false
+            );
+
+            // Populate Print Header & Tables
+            document.getElementById('printSubheader').innerText = 
+                `Total Run: ${formatInchesTo16th(d.wallLength)}  |  Total Height: ${formatInchesTo16th(d.totalHeight)}  |  Layout: ${d.numPanels} Panels (${d.numStiles} Stiles)`;
+            document.getElementById('printTimestamp').innerText = `Generated: ${new Date().toLocaleDateString()}`;
+
+            const rows = [
+                ['Total Wall Run', formatInchesTo16th(d.wallLength)],
+                ['Total Wainscot Height', formatInchesTo16th(d.totalHeight)],
+                ['Panel Opening Width', `${formatInchesTo16th(d.exactPanelWidth)} (${d.numPanels} openings)`],
+                ['Panel Opening Height', formatInchesTo16th(d.exactPanelHeight)],
+                ['Vertical Stiles Cut Length', `${formatInchesTo16th(d.stileLength)} (${d.numStiles} pcs)`],
+                ['Interior Stile Width', formatInchesTo16th(d.stileWidth)],
+                ['Left & Right End Stile Width', `${formatInchesTo16th(d.endStileWidth)} (${d.endStileMode === 'half' ? 'Half-Width Butt' : 'Full Width'})`],
+                ['Top Rail Height × Run', `${formatInchesTo16th(d.topRail)} × ${formatInchesTo16th(d.wallLength)}`],
+                ['Bottom Rail / Baseboard × Run', `${formatInchesTo16th(d.bottomRail)} × ${formatInchesTo16th(d.wallLength)}`]
+            ];
+
+            document.getElementById('printCutTable').innerHTML = rows.map(r => `
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 6px 4px; font-weight: 600; color: #333;">${r[0]}</td>
+                    <td style="padding: 6px 4px; font-weight: 800; text-align: right; color: #000;">${r[1]}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('printTapeTable').innerHTML = d.tapeItems.map(item => `
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 5px 4px; font-weight: 700; color: #222;">${item.name}</td>
+                    <td style="padding: 5px 4px; font-weight: 800; text-align: right; color: #000;">${formatInchesTo16th(item.start)}  →  ${formatInchesTo16th(item.end)}</td>
+                </tr>
+            `).join('');
+
+            window.print();
+        }
+
         // 2D Joint Visualizer
         function drawZoomedJoint(jointAngleDeg, angleA, angleB, wA, wB) {
             const canvas = document.getElementById('jointCanvas');
@@ -704,15 +1334,12 @@
             const sinHalf = Math.sin(half);
             const cosHalf = Math.cos(half);
 
-            // Unit vectors along board lengths extending upward from the corner
             const uAx = -sinHalf, uAy = -cosHalf;
             const uBx =  sinHalf, uBy = -cosHalf;
 
-            // Inward unit normals pointing into the joint V
             const nAx =  cosHalf, nAy = -sinHalf;
             const nBx = -cosHalf, nBy = -sinHalf;
 
-            // Intersection of inner edges
             const Dx = WB * nBx - WA * nAx;
             const Dy = WB * nBy - WA * nAy;
             const sinTheta = Math.sin(thetaRad);
@@ -724,7 +1351,7 @@
             const seamDist = Math.hypot(Pin_x, Pin_y);
             const boardLength = Math.max(130 * baseScale, seamDist + 55 * baseScale);
 
-            // 1. Board A Polygon (Clean Miter Face)
+            // 1. Board A Polygon
             ctx.beginPath();
             ctx.moveTo(0, 0); 
             ctx.lineTo(Pin_x, Pin_y); 
@@ -737,7 +1364,7 @@
             ctx.lineWidth = 2.5;
             ctx.stroke();
 
-            // 2. Board B Polygon (Clean Miter Face)
+            // 2. Board B Polygon
             ctx.beginPath();
             ctx.moveTo(0, 0); 
             ctx.lineTo(Pin_x, Pin_y); 
@@ -769,7 +1396,7 @@
             ctx.lineWidth = 2.5;
             ctx.stroke();
 
-            // 5. Board A Label (Running parallel along Board A)
+            // 5. Board A Label (Parallel along Board A)
             ctx.save();
             ctx.translate(uAx * boardLength * 0.58 - nAx * 18, uAy * boardLength * 0.58 - nAy * 18);
             ctx.rotate(Math.PI / 2 - half);
@@ -779,7 +1406,7 @@
             ctx.fillText(`Board A (${angleA.toFixed(1)}°)`, 0, 0);
             ctx.restore();
 
-            // 6. Board B Label (Running parallel along Board B)
+            // 6. Board B Label (Parallel along Board B)
             ctx.save();
             ctx.translate(uBx * boardLength * 0.58 - nBx * 18, uBy * boardLength * 0.58 - nBy * 18);
             ctx.rotate(-(Math.PI / 2 - half));
@@ -800,10 +1427,10 @@
                     updateSliderPosition(current3DView === 'saw' ? 'btn-view-saw' : 'btn-view-installed', 'view-slider');
                 }
             });
-            // Initial positioning of sliders
             updateSliderPosition('tab-miter', 'tab-slider');
             calculateMiter();
             calculateCrown();
+            calculateWainscot();
         };
     </script>
     
@@ -928,12 +1555,14 @@
         fence.position.set(0, 4.75, -0.4); 
         sawGroup.add(fence);
 
+        // Crown Stop / Jig Block on the Saw Bed
         const stopBlockGeo = new THREE.BoxGeometry(56, 0.9, 1.8);
         const stopBlockMat = new THREE.MeshStandardMaterial({ color: 0xCCDA46, roughness: 0.5, transparent: true, opacity: 0.75 });
         const crownStopBlock = new THREE.Mesh(stopBlockGeo, stopBlockMat);
         crownStopBlock.position.set(0, 0.45, 6.1);
         sawGroup.add(crownStopBlock);
 
+        // Vertical Miter Saw Blade
         const bladePivot = new THREE.Group();
         const blade = new THREE.Mesh(
             new THREE.CylinderGeometry(8.5, 8.5, 0.14, 48),
@@ -947,7 +1576,7 @@
         const sawWoodGroup = new THREE.Group();
         sawGroup.add(sawWoodGroup);
 
-        // 5. ENVIRONMENT B: Installed Room Corner
+        // 5. ENVIRONMENT B: Installed Room Corner (Centered Ceiling Plane)
         const roomGroup = new THREE.Group();
         roomGroup.visible = false;
         scene.add(roomGroup);
@@ -959,7 +1588,7 @@
 
         const wallMatL = new THREE.MeshStandardMaterial({ color: 0x181B1F, roughness: 0.9 });
         const wallMatR = new THREE.MeshStandardMaterial({ color: 0x121417, roughness: 0.9 });
-        const ceilMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.85, transparent: true, opacity: 0.45 });
+        const ceilMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.85, transparent: true, opacity: 0.4 });
 
         const leftWallMesh = new THREE.Mesh(new THREE.BoxGeometry(26, 18, 0.8), wallMatL);
         leftWallMesh.position.set(-13, -9, -0.4);
@@ -969,8 +1598,9 @@
         rightWallMesh.position.set(13, -9, -0.4);
         rightWallWing.add(rightWallMesh);
 
-        const ceilingPlane = new THREE.Mesh(new THREE.BoxGeometry(44, 0.5, 32), ceilMat);
-        ceilingPlane.position.set(0, 0.25, 10);
+        // Centered Ceiling Plane at (0, 0.25, 0) so it stays symmetrically centered on both Inside and Outside corners
+        const ceilingPlane = new THREE.Mesh(new THREE.BoxGeometry(60, 0.5, 60), ceilMat);
+        ceilingPlane.position.set(0, 0.25, 0);
         roomGroup.add(ceilingPlane);
 
         const leftInstalledCrownHolder = new THREE.Group();
@@ -979,8 +1609,9 @@
         rightWallWing.add(rightInstalledCrownHolder);
 
         let currentViewMode = 'saw';
+        let hasInitializedCamera = false;
 
-        // 6. Resize & View Switching
+        // 6. Resize & View Switching (Persistent View & Zoom Angle)
         window.resizeThreeJS = () => {
             if (container.clientWidth > 0 && container.clientHeight > 0) {
                 camera.aspect = container.clientWidth / container.clientHeight;
@@ -989,26 +1620,16 @@
             }
         };
 
-        window.toggleThreeEnvironment = (viewMode, resetCamera = false) => {
+        window.toggleThreeEnvironment = (viewMode, forceResetCamera = false) => {
             currentViewMode = viewMode;
-            if (viewMode === 'saw') {
-                sawGroup.visible = true;
-                roomGroup.visible = false;
-                
-                if (resetCamera) {
-                    camera.position.set(0, 15, 30);
-                    controls.target.set(0, 3.2, 2.5);
-                    controls.update();
-                }
-            } else {
-                sawGroup.visible = false;
-                roomGroup.visible = true;
-                
-                if (resetCamera) {
-                    camera.position.set(0, -12, 28);
-                    controls.target.set(0, -4, 4);
-                    controls.update();
-                }
+            sawGroup.visible = (viewMode === 'saw');
+            roomGroup.visible = (viewMode !== 'saw');
+
+            if (!hasInitializedCamera || forceResetCamera) {
+                camera.position.set(0, 14, 32);
+                controls.target.set(0, 0, 2);
+                controls.update();
+                hasInitializedCamera = true;
             }
         };
 
