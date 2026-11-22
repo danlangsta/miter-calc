@@ -968,13 +968,13 @@
             }
 
             const sawSettingStr = sawSetting.toFixed(1);
-            if (cornerType === 'inside') {
-                document.getElementById('cheatA').innerHTML = `👉 Swing saw <b>Left ${sawSettingStr}°</b>. Hold keeper on <b>Right</b> of blade.`;
-                document.getElementById('cheatB').innerHTML = `👉 Swing saw <b>Right ${sawSettingStr}°</b>. Hold keeper on <b>Left</b> of blade.`;
-            } else {
-                document.getElementById('cheatA').innerHTML = `👉 Swing saw <b>Right ${sawSettingStr}°</b>. Hold keeper on <b>Right</b> of blade.`;
-                document.getElementById('cheatB').innerHTML = `👉 Swing saw <b>Left ${sawSettingStr}°</b>. Hold keeper on <b>Left</b> of blade.`;
-            }
+if (cornerType === 'inside') {
+    document.getElementById('cheatA').innerHTML = `👉 Swing saw <b>Right ${sawSettingStr}°</b>. Hold keeper on <b>Right</b> of blade.`;
+    document.getElementById('cheatB').innerHTML = `👉 Swing saw <b>Left ${sawSettingStr}°</b>. Hold keeper on <b>Left</b> of blade.`;
+} else {
+    document.getElementById('cheatA').innerHTML = `👉 Swing saw <b>Left ${sawSettingStr}°</b>. Hold keeper on <b>Right</b> of blade.`;
+    document.getElementById('cheatB').innerHTML = `👉 Swing saw <b>Right ${sawSettingStr}°</b>. Hold keeper on <b>Left</b> of blade.`;
+}
 
             document.getElementById('dimensionBadge').innerText = `${cornerAngleDeg}° ${cornerType.toUpperCase()} (${wallPosition} Wall)`;
             
